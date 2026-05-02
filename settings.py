@@ -9,13 +9,23 @@ BASE_DIR = Path(__file__).resolve().parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4&=k&a295ae#@w3p^f2@akd^jffsmg+zvckbfb-*!x&coxqc*#'
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    'django-insecure-4&=k&a295ae#@w3p^f2@akd^jffsmg+zvckbfb-*!x&coxqc*#',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() == "true"
 
 # Dev: Vite may use LAN URL; Django also receives proxied API calls to 127.0.0.1:8000
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get(
+        "DJANGO_ALLOWED_HOSTS",
+        "localhost,127.0.0.1,[::1],.vercel.app",
+    ).split(",")
+    if host.strip()
+]
 
 
 # Application definition
@@ -43,7 +53,9 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "").strip()
+CORS_ALLOW_ALL_ORIGINS = not FRONTEND_URL
+CORS_ALLOWED_ORIGINS = [FRONTEND_URL] if FRONTEND_URL else []
 ROOT_URLCONF = 'urls'
 
 TEMPLATES = [
