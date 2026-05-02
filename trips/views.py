@@ -112,11 +112,14 @@ def trip_plan(request):
 
         annotate_calendar_dates(logs, log_date_inst)
 
-        TripSubmission.objects.create(
-            driver_name=driver_name,
-            log_date=log_date_inst,
-            duty_start=duty_time,
-        )
+        try:
+            TripSubmission.objects.create(
+                driver_name=driver_name,
+                log_date=log_date_inst,
+                duty_start=duty_time,
+            )
+        except Exception:
+            logger.exception("Trip submission persistence failed")
 
         response = {
             "summary": {
@@ -138,8 +141,8 @@ def trip_plan(request):
 
         return Response(response)
 
-    except Exception as e:
-        logger.error("Trip planning failed: %s", e)
+    except Exception:
+        logger.exception("Trip planning failed")
         return Response(
             {"error": "Internal server error"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
